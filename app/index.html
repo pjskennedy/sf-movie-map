@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title> SF - Movie Map</title>
+
+    <link rel="stylesheet" href="./main.css">
+    <script
+      src="//code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <script
+      src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.min.js"
+      integrity="sha256-qlku5J3WO/ehJpgXYoJWC2px3+bZquKChi4oIWrAKoI="
+      crossorigin="anonymous"></script>
+    <script
+      type="text/javascript"
+      src="//maps.google.com/maps/api/js?key=$GOOGLE_MAPS_API_KEY"></script>
+
+    <script type="text/javascript" src="./main.js"></script>
+
+    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+    <script id="film-template" type="text/x-handlebars-template">
+      <div class="film">
+        <h2><i class="fa fa-film"></i>&nbsp;{{title}} ({{year}})</em></h2>
+        <b><i class="fa fa-building"></i>&nbsp;{{production_company}}</b>
+        <h4>Directed by {{director}}</h4>
+        <ul class="actor-list">
+          Starring
+          {{#each actors}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    </script>
+
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
