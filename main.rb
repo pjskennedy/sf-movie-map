@@ -32,7 +32,11 @@ def lookup_coordinates(geocoder_text)
   response = Net::HTTP.get(uri)
   json = JSON.parse(response, symbolize_names: true)
   if json[:status] == "OK" && !json[:results].empty?
-    json[:results].first[:geometry][:location]
+    # Take the first result in san francisco, because I'm lazy
+    result = json[:results].find do |response|
+      response[:address_components].map{|comp| comp[:long_name]}.include? "San Francisco"
+    end
+    result[:geometry][:location] if result
   end
 end
 
