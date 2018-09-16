@@ -35,8 +35,17 @@
       </div>
     </script>
 
+    <script id="menu-entry-template" type="text/x-handlebars-template">
+      <div class="selectable" data-title="{{title}}">{{title}}</div>
+    </script>
   </head>
   <body>
-    <div id="map"></div>
+    <div id="container">
+      <div id="menu" class="gm-style gm-style-iw">
+        <h3> SF Film Locations </h3>
+        <div id="film-menu"></div>
+      </div>
+      <div id="map"></div>
+    </div>
   </body>
 </html>
