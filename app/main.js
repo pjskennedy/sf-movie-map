@@ -1,32 +1,64 @@
 // Global to hold all film data.
 var filmData = [];
+var displayedFilmData = [];
+var currentInfoWindow = null;
+var map = null;
 
-$( document ).ready(function(){
-  var style = [
-    {
-      stylers: [
-        { saturation: "0" },
-        { lightness: "0" }
-      ]
-    }, {
-      featureType: "poi",
-      stylers: [
-        { visibility: "off" }
-      ]
-    }, {
-      featureType: "transit",
-      stylers: [
-        { visibility: "off" }
-      ]
-    }, {
-      featureType: "landscape",
-      stylers: [
-        { saturation: "0"},
-        { lightness: "0" }
-      ]
+var renderFilms = function() {
+  filmData.forEach(function(film) {
+    film.locations.forEach(function(location) {
+      location.marker.setMap(null);
+    });
+  });
+  displayedFilmData.forEach(function(film) {
+    film.locations.forEach(function(location) {
+      location.marker.setMap(map);
+    });
+  });
+}
+
+var renderMenu = function() {
+  var template = Handlebars.compile($("#menu-entry-template")[0].innerHTML);
+
+  $("#film-menu").html("")
+
+  var films = filmData.sort(function(a, b){
+    if(a.title < b.title) return -1;
+    if(a.title > b.title) return 1;
+    return 0;
+  })
+
+  for(var i = 0; i< films.length; i+= 1) {
+    var film = films[i];
+    var html = template(film);
+    $("#film-menu").append(html)
+  }
+
+  $("#film-menu .selectable").click(function(e){
+    var target = $(e.currentTarget);
+
+    var title = target.data("title");
+    var film = films.find(function(f) { return f.title == title });
+
+    var targetWasSelected = target.hasClass("selected");
+
+    // If anything is selected, we need to deselect it
+    if ($("#film-menu .selectable").hasClass("selected")) {
+      $("#film-menu .selectable").removeClass("selected");
     }
-  ]
 
+    if (targetWasSelected) {
+      displayedFilmData = filmData;
+      renderFilms();
+    } else {
+      target.addClass("selected");
+      displayedFilmData = [film];
+      renderFilms();
+    }
+  });
+}
+
+var renderMap = function() {
   // Roughly centered around San Francisco.
   var options = {
     zoom: 13,
@@ -35,43 +67,46 @@ $( document ).ready(function(){
     disableDefaultUI: true
   };
 
-  var map = new google.maps.Map($("#map")[0], options);
-  map.setOptions({styles: style});
-  // Global infowindow for when a user selects a "marker" to display more information
-  var infoWindow = null;
+  map = new google.maps.Map($("#map")[0], options);
+}
 
-  // // Use handlebars to precompile film information on click
+var setMarkers = function() {
   var template = Handlebars.compile($("#film-template")[0].innerHTML);
 
-  $.get("films.json", function(data) {
-    filmData = data.map(function(film) {
-      film.locations = film.locations.map(function(location) {
-        var marker = new google.maps.Marker({
-          position: location,
-          map: map,
-          title: film.title
-        });
-
-        google.maps.event.addListener(marker, 'click', function() {
-
-          // If an info window is already open, close it
-          if (infoWindow) {
-            infoWindow.close();
-          }
-
-          // Render film information
-          infoWindow = new google.maps.InfoWindow({
-            content: template(film)
-          });
-          infoWindow.open(map, marker);
-        });
-
-        location.marker = marker;
-
-        return location;
+  filmData.forEach(function(film) {
+    film.locations.forEach(function(location) {
+      var marker = new google.maps.Marker({
+        position: location,
+        map: null,
+        title: film.title
       });
 
-      return film;
+      location.marker = marker;
+
+      google.maps.event.addListener(marker, 'click', function() {
+        // If an info window is already open, close it
+        if (currentInfoWindow) {
+          currentInfoWindow.close();
+        }
+
+        // Render film information
+        currentInfoWindow = new google.maps.InfoWindow({
+          content: template(film)
+        });
+
+        currentInfoWindow.open(map, marker);
+      });
     });
+  });
+}
+
+$( document ).ready(function(){
+  renderMap();
+  $.get("films.json", function(data) {
+    filmData = data;
+    setMarkers();
+    displayedFilmData = filmData;
+    renderMenu();
+    renderFilms();
   });
 });
