@@ -5,6 +5,9 @@ var currentInfoWindow = null;
 var map = null;
 
 var renderFilms = function() {
+  if (currentInfoWindow) {
+    currentInfoWindow.close();
+  }
   filmData.forEach(function(film) {
     film.locations.forEach(function(location) {
       location.marker.setMap(null);
@@ -28,11 +31,10 @@ var renderMenu = function() {
     return 0;
   })
 
-  for(var i = 0; i< films.length; i+= 1) {
-    var film = films[i];
+  films.forEach(function(film){
     var html = template(film);
     $("#film-menu").append(html)
-  }
+  });
 
   $("#film-menu .selectable").click(function(e){
     var target = $(e.currentTarget);
@@ -91,7 +93,7 @@ var setMarkers = function() {
 
         // Render film information
         currentInfoWindow = new google.maps.InfoWindow({
-          content: template(film)
+          content: template({film: film, location: location})
         });
 
         currentInfoWindow.open(map, marker);

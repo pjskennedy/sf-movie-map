@@ -23,7 +23,7 @@ end
 
 # Read movie data from the City of San Francisco
 def query_datasf
-  read_json("https://data.sfgov.org/resource/wwmu-gmzc.json?$limit=100000")
+  read_json("https://data.sfgov.org/resource/wwmu-gmzc.json?$limit=1000000")
 end
 
 # Function to geocode a given text-based address
@@ -36,12 +36,12 @@ def lookup_coordinates(geocoder_text)
   end
 end
 
-grouped_records = query_datasf.group_by{|j| j[:title]}
+grouped_records = query_datasf.group_by{|j| j[:title].strip}
 
 records = grouped_records.map do |_title, films|
   first_film = films.first
 
-  title = first_film[:title]
+  title = first_film[:title].strip
   year = first_film[:release_year].nil? ? nil : first_film[:release_year].to_i
   director = first_film[:director]
   writer = first_film[:writer]
@@ -49,11 +49,15 @@ records = grouped_records.map do |_title, films|
   distributor = first_film[:distributor]
   actors = [first_film[:actor_1], first_film[:actor_2], first_film[:actor_3]].compact.uniq
 
-  locations = films.map { |f| f[:locations] }.uniq.compact.map do |text|
+  locations = films.map { |f| f[:locations] }
+  notes = films.map { |f| f[:fun_facts] }
+  location_details = locations.zip(notes).select { |location, fact| !location.nil? }
+
+  locations = location_details.map do |location, fun_fact|
     # Google maps doesn't play well with "&"
-    geocoder_text = "#{text.gsub("&", "and")}, San Francisco, California, USA"
+    geocoder_text = "#{location.gsub("&", "and")}, San Francisco, California, USA"
     coordinates = lookup_coordinates(geocoder_text)
-    coordinates ? coordinates.merge(location: text) : nil
+    coordinates ? coordinates.merge(location: location, facts: fun_fact) : nil
   end
 
   {
@@ -64,9 +68,11 @@ records = grouped_records.map do |_title, films|
     distributor: distributor,
     writer: writer,
     actors: actors,
-    locations: locations
+    locations: locations.compact
   }
 end
 
+active_records = records.select{|r| !r[:locations].empty? }
+
 # Write JSON to STDOUT
-puts JSON.pretty_generate(records)
+puts JSON.pretty_generate(active_records)

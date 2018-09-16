@@ -23,15 +23,20 @@
 
     <script id="film-template" type="text/x-handlebars-template">
       <div class="film">
-        <h2><i class="fa fa-film"></i>&nbsp;{{title}} ({{year}})</em></h2>
-        <b><i class="fa fa-building"></i>&nbsp;{{production_company}}</b>
-        <h4>Directed by {{director}}</h4>
+          <small>{{location.location}}</small>
+        <h2><i class="fa fa-film"></i>&nbsp;{{film.title}} ({{film.year}})</em></h2>
+
+        <b><i class="fa fa-building"></i>&nbsp;{{film.production_company}}</b>
+
+        <h4>Directed by {{film.director}}</h4>
         <ul class="actor-list">
           Starring
-          {{#each actors}}
+          {{#each film.actors}}
             <li>{{this}}</li>
           {{/each}}
         </ul>
+        <p>{{location.facts}}</p>
+
       </div>
     </script>
 
